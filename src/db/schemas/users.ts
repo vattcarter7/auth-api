@@ -7,7 +7,7 @@ export const users = pgTable("users", {
   firstName: varchar("first_name", { length: 256 }).notNull(),
   lastName: varchar("last_name", { length: 256 }).notNull(),
   password: varchar("password", { length: 256 }).notNull(),
-  verificationCode: varchar("verification_code", { length: 256 }).default(nanoid()),
+  verificationCode: varchar("verification_code", { length: 256 }).notNull(),
   passwordResetCode: varchar("password_reset_code", { length: 256 }),
   verified: boolean("verified").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),

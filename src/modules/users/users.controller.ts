@@ -1,7 +1,12 @@
 import { Request, Response } from "express";
-import { CreateUserInput, LoginWithEmailAndPasswordInput } from "./users.schemas";
+import {
+  CreateUserInput,
+  LoginWithEmailAndPasswordInput,
+} from "./users.schemas";
 import sendEmail from "../../utils/mailer";
 import { createUser } from "./users.services";
+import { nanoid } from "nanoid";
+import argon2 from "argon2";
 
 export const loginWithEmailAndPasswordHandler = (
   req: Request<{}, {}, LoginWithEmailAndPasswordInput>,
@@ -14,10 +19,17 @@ export async function createUserHandler(
   req: Request<{}, {}, CreateUserInput>,
   res: Response
 ) {
-  const body = req.body;
-
+  const { email, firstName, lastName, password } = req.body;
+  const hashedPassword = await argon2.hash(password);
+  const verificationCode = nanoid();
   try {
-    const user = await createUser(body);
+    const user = await createUser({
+      email,
+      firstName,
+      lastName,
+      password: hashedPassword,
+      verificationCode,
+    });
 
     await sendEmail({
       to: user.email,
