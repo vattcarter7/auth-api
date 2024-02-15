@@ -1,5 +1,5 @@
 {
-  "id": "2f248795-8627-46c3-83a2-ba513798107b",
+  "id": "75f856db-4658-4eac-b7b8-e0cec95cdbeb",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
@@ -57,8 +57,14 @@
           "primaryKey": false,
           "notNull": true
         },
-        "username": {
-          "name": "username",
+        "first_name": {
+          "name": "first_name",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "last_name": {
+          "name": "last_name",
           "type": "varchar(256)",
           "primaryKey": false,
           "notNull": true
@@ -69,11 +75,25 @@
           "primaryKey": false,
           "notNull": true
         },
-        "email_verified": {
-          "name": "email_verified",
-          "type": "timestamp",
+        "verification_code": {
+          "name": "verification_code",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'P5VfCHMMar9zV1OK13ean'"
+        },
+        "password_reset_code": {
+          "name": "password_reset_code",
+          "type": "varchar(256)",
           "primaryKey": false,
           "notNull": false
+        },
+        "verified": {
+          "name": "verified",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
         },
         "created_at": {
           "name": "created_at",
@@ -93,7 +113,15 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {
+        "users_email_unique": {
+          "name": "users_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        }
+      }
     }
   },
   "enums": {},

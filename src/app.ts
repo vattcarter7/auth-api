@@ -3,13 +3,19 @@ import { migrate } from "drizzle-orm/node-postgres/migrator";
 
 import { log } from "./utils/logger";
 import { db } from "./db";
+import { env } from "./constants/env";
+import userRoute from "./modules/users/users.routes";
 
 const main = async () => {
   const app = express();
 
   app.use(express.json());
 
-  const port = 4000;
+  app.get("/health-check", (_, res) => res.sendStatus(200));
+
+  app.use(userRoute);
+
+  const port = parseInt(env.PORT!, 10) || 4000;
 
   const server = app.listen(port, () => {
     log.info(` Server is running on port ${port}`);
