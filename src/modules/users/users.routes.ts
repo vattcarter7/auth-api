@@ -1,10 +1,16 @@
 import express from "express";
 
 import validateSchema from "../../utils/validateSchema";
-import { createUserSchema, verifyUserSchema } from "./users.schemas";
-import { createUserHandler, verifyUserHandler } from "./users.controller";
+import { createUserSchema, verifyUserSchema, loginWithEmailAndPasswordSchema } from "./users.schemas";
+import { createUserHandler, loginWithEmailAndPasswordHandler, verifyUserHandler } from "./users.controller";
 
 const router = express.Router();
+
+router.post(
+  "/api/v1/users/login",
+  validateSchema(loginWithEmailAndPasswordSchema),
+  loginWithEmailAndPasswordHandler
+);
 
 router.post(
   "/api/v1/users",

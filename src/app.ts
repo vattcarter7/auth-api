@@ -1,5 +1,6 @@
 import express from "express";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
+import cookieParser from "cookie-parser";
 
 import { log } from "./utils/logger";
 import { db } from "./db";
@@ -9,7 +10,14 @@ import userRoute from "./modules/users/users.routes";
 const main = async () => {
   const app = express();
 
+  // built-in middleware to handle urlencoded form data
+  app.use(express.urlencoded({ extended: false }));
+
+  // built-in middleware for json
   app.use(express.json());
+
+  //middleware for cookies
+  app.use(cookieParser());
 
   app.get("/health-check", (_, res) => res.sendStatus(200));
 

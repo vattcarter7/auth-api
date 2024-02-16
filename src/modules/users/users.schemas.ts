@@ -1,6 +1,6 @@
 import zod, { object, string } from "zod";
 
-export const loginWithEmailAndPassword = object({
+export const loginWithEmailAndPasswordSchema = object({
   body: object({
     email: string({
       required_error: "Email is required",
@@ -36,7 +36,7 @@ export const verifyUserSchema = object({
 });
 
 export type LoginWithEmailAndPasswordInput = zod.infer<
-  typeof loginWithEmailAndPassword
+  typeof loginWithEmailAndPasswordSchema
 >["body"];
 
 export type CreateUserInput = zod.infer<typeof createUserSchema>["body"];

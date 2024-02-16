@@ -1,5 +1,4 @@
 import { boolean, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
-import { nanoid } from "nanoid";
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
