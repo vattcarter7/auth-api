@@ -15,7 +15,7 @@ const main = async () => {
 
   app.use(userRoute);
 
-  const port = parseInt(env.PORT!, 10) || 4000;
+  const port = env.PORT;
 
   const server = app.listen(port, () => {
     log.info(` Server is running on port ${port}`);
