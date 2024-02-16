@@ -12,6 +12,7 @@ import sendEmail from "../../utils/mailer";
 import {
   createUser,
   createUserSessionToken,
+  deleteSessionToken,
   findUserByEmail,
   findUserById,
   verifyUserById,
@@ -129,3 +130,16 @@ export const verifyUserHandler = async (
 
   return res.send("Could not verify user");
 };
+
+export const logoutHandler = async (req: Request, res: Response) => {
+    // TODO: Delete the accessToken on the client too
+
+    const cookies = req.cookies;
+    if (!cookies?.jwt) return res.sendStatus(204); //No content
+    const refreshToken = cookies.jwt;
+
+    await deleteSessionToken(refreshToken);
+
+    res.clearCookie('jwt', { httpOnly: true, secure: env.NODE_ENV === "production" });
+    res.sendStatus(204);
+}

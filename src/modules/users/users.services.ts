@@ -36,3 +36,9 @@ export const createUserSessionToken = async (
     .insert(sessions)
     .values({ sessionToken: data.sessionToken, userId: data.userId });
 };
+
+export const deleteSessionToken = async (session: string) => {
+  const result = await db.delete(sessions).where(eq(sessions.sessionToken, session)).returning();
+
+  return result[0];
+}
