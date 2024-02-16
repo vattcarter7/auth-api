@@ -1,10 +1,19 @@
-import { InferInsertModel } from "drizzle-orm";
+import { InferInsertModel, eq } from "drizzle-orm";
 import { users } from "../../db/schemas/users";
 import { db } from "../../db";
-
 
 export const createUser = async (input: InferInsertModel<typeof users>) => {
   const result = await db.insert(users).values(input).returning();
 
   return result[0];
-}
+};
+
+export const findUserById = async (id: string) => {
+  const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+
+  return result[0];
+};
+
+export const verifyUserById = async (id: string) => {
+  await db.update(users).set({ verified: true }).where(eq(users.id, id));
+};

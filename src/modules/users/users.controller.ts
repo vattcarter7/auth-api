@@ -2,9 +2,10 @@ import { Request, Response } from "express";
 import {
   CreateUserInput,
   LoginWithEmailAndPasswordInput,
+  VerifyUserInput,
 } from "./users.schemas";
 import sendEmail from "../../utils/mailer";
-import { createUser } from "./users.services";
+import { createUser, findUserById, verifyUserById } from "./users.services";
 import { nanoid } from "nanoid";
 import argon2 from "argon2";
 
@@ -47,3 +48,31 @@ export async function createUserHandler(
     return res.status(500).send(e);
   }
 }
+
+export const verifyUserHandler = async (
+  req: Request<VerifyUserInput>,
+  res: Response
+) => {
+  const { id, verificationCode } = req.params;
+
+  // Find the user by id
+  const user = await findUserById(id);
+
+  if (!user) {
+    return res.send("Could not verify user");
+  }
+
+  // check to see if they are already verified
+  if (user.verified) {
+    return res.send("User is already verified");
+  }
+
+  // check to see if the verificationCode matches
+  if (user.verificationCode === verificationCode) {
+    await verifyUserById(id);
+
+    return res.send("User successfully verified");
+  }
+
+  return res.send("Could not verify user");
+};
