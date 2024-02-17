@@ -29,7 +29,7 @@ export const findUserByEmail = async (email: string) => {
   return result[0];
 };
 
-export const createUserSessionToken = async (
+export const createSessionToken = async (
   data: InferInsertModel<typeof sessions>
 ) => {
   await db

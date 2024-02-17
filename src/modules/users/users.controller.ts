@@ -11,7 +11,7 @@ import {
 import sendEmail from "../../utils/mailer";
 import {
   createUser,
-  createUserSessionToken,
+  createSessionToken,
   deleteSessionToken,
   deleteUserSessions,
   findSessionToken,
@@ -21,19 +21,13 @@ import {
 } from "./users.services";
 import { env } from "../../constants/env";
 
-// userId: user.id,
-// email: email,
-// firstName: user.firstName,
-// lastName: user.lastName,
-// verified: user.verified,
-
 type JWT_PAYLOAD = {
   userId: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  verified: boolean;
-}
+};
+
+const ACCESS_TOKEN_EXPIRE = "15m";
+const REFRESH_TOKEN_EXPIRE = "1y";
+const JWT_COOKIE_EXPIRE = 12 * 30 * 24 * 60 * 60 * 1000; // 1 year
 
 export const loginWithEmailAndPasswordHandler = async (
   req: Request<{}, {}, LoginWithEmailAndPasswordInput>,
@@ -59,28 +53,24 @@ export const loginWithEmailAndPasswordHandler = async (
   const accessToken = jwt.sign(
     {
       userId: user.id,
-      email: email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      verified: user.verified,
     },
     env.ACCESS_TOKEN_SECRET,
     {
-      expiresIn: "10s",
+      expiresIn: ACCESS_TOKEN_EXPIRE,
     }
   );
 
   const refreshToken = jwt.sign({ userId: user.id }, env.REFRESH_TOKEN_SECRET, {
-    expiresIn: "1d",
+    expiresIn: REFRESH_TOKEN_EXPIRE,
   });
 
-  await createUserSessionToken({ userId: user.id, sessionToken: refreshToken });
+  await createSessionToken({ userId: user.id, sessionToken: refreshToken });
 
   // Creates Secure Cookie with refresh token
   res.cookie("jwt", refreshToken, {
     httpOnly: true,
     secure: env.NODE_ENV === "production",
-    maxAge: 24 * 60 * 60 * 1000,
+    maxAge: JWT_COOKIE_EXPIRE,
   });
 
   return res.json({ accessToken, refreshToken });
@@ -111,10 +101,6 @@ export async function createUserHandler(
 
     return res.send("User successfully created");
   } catch (e: any) {
-    if (e.code === 11000) {
-      return res.status(409).send("Account already exists");
-    }
-
     return res.status(500).send(e);
   }
 }
@@ -167,7 +153,10 @@ export const refreshTokenHandler = async (req: Request, res: Response) => {
   const cookies = req.cookies;
   if (!cookies?.jwt) return res.sendStatus(401);
   const refreshToken = cookies.jwt;
-  res.clearCookie("jwt", { httpOnly: true, secure: true });
+  res.clearCookie("jwt", {
+    httpOnly: true,
+    secure: env.NODE_ENV === "production",
+  });
 
   const foundSession = await findSessionToken(refreshToken);
 
@@ -175,20 +164,68 @@ export const refreshTokenHandler = async (req: Request, res: Response) => {
   if (!foundSession) {
     try {
       // Bad user attempting reuse the refresh token
-      const decoded = jwt.verify(refreshToken, env.REFRESH_TOKEN_SECRET) as JWT_PAYLOAD;
-      console.log('decoded', decoded);
-      
-      // Delete all session for that decoded user
+      const decoded = jwt.verify(
+        refreshToken,
+        env.REFRESH_TOKEN_SECRET
+      ) as JWT_PAYLOAD;
+
+      // Delete all sessions for that decoded user
       await deleteUserSessions(decoded.userId);
     } catch (error) {
-      return res.sendStatus(403); //Forbidden
+      return res.sendStatus(403); // Forbidden
     }
 
-    
-    return res.sendStatus(403); //Forbidden
+    return res.sendStatus(403); // Forbidden
   }
 
-  // evaluate jwt
+  try {
+    const decoded = jwt.verify(
+      refreshToken,
+      env.REFRESH_TOKEN_SECRET
+    ) as JWT_PAYLOAD;
 
-  res.sendStatus(204);
+    if (decoded.userId !== foundSession.userId) {
+      return res.sendStatus(403); // Forbidden
+    }
+
+    // evaluate jwt
+    const newRefreshToken = jwt.sign(
+      { userId: foundSession.userId },
+      env.REFRESH_TOKEN_SECRET,
+      {
+        expiresIn: REFRESH_TOKEN_EXPIRE,
+      }
+    );
+
+    const accessToken = jwt.sign(
+      {
+        userId: foundSession.userId,
+      },
+      env.ACCESS_TOKEN_SECRET,
+      {
+        expiresIn: ACCESS_TOKEN_EXPIRE,
+      }
+    );
+
+    // Delete old session from db
+    await deleteSessionToken(refreshToken);
+
+    // create new session into db
+    await createSessionToken({
+      userId: foundSession.userId,
+      sessionToken: newRefreshToken,
+    });
+
+    // Create Secure Cookie with refresh token
+    res.cookie("jwt", newRefreshToken, {
+      httpOnly: true,
+      secure: env.NODE_ENV === "production",
+      maxAge: JWT_COOKIE_EXPIRE,
+    });
+
+    return res.json({ accessToken, refreshToken: newRefreshToken });
+  } catch (error) {
+    await deleteSessionToken(refreshToken);
+    return res.sendStatus(403); // Forbidden
+  }
 };
