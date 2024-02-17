@@ -13,11 +13,27 @@ import {
   createUser,
   createUserSessionToken,
   deleteSessionToken,
+  deleteUserSessions,
+  findSessionToken,
   findUserByEmail,
   findUserById,
   verifyUserById,
 } from "./users.services";
 import { env } from "../../constants/env";
+
+// userId: user.id,
+// email: email,
+// firstName: user.firstName,
+// lastName: user.lastName,
+// verified: user.verified,
+
+type JWT_PAYLOAD = {
+  userId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  verified: boolean;
+}
 
 export const loginWithEmailAndPasswordHandler = async (
   req: Request<{}, {}, LoginWithEmailAndPasswordInput>,
@@ -132,14 +148,47 @@ export const verifyUserHandler = async (
 };
 
 export const logoutHandler = async (req: Request, res: Response) => {
-    // TODO: Delete the accessToken on the client too
+  // Delete the accessToken on the client too
 
-    const cookies = req.cookies;
-    if (!cookies?.jwt) return res.sendStatus(204); //No content
-    const refreshToken = cookies.jwt;
+  const cookies = req.cookies;
+  if (!cookies?.jwt) return res.sendStatus(204); //No content
+  const refreshToken = cookies.jwt;
 
-    await deleteSessionToken(refreshToken);
+  await deleteSessionToken(refreshToken);
 
-    res.clearCookie('jwt', { httpOnly: true, secure: env.NODE_ENV === "production" });
-    res.sendStatus(204);
-}
+  res.clearCookie("jwt", {
+    httpOnly: true,
+    secure: env.NODE_ENV === "production",
+  });
+  res.sendStatus(204);
+};
+
+export const refreshTokenHandler = async (req: Request, res: Response) => {
+  const cookies = req.cookies;
+  if (!cookies?.jwt) return res.sendStatus(401);
+  const refreshToken = cookies.jwt;
+  res.clearCookie("jwt", { httpOnly: true, secure: true });
+
+  const foundSession = await findSessionToken(refreshToken);
+
+  // Detect refresh token reuse
+  if (!foundSession) {
+    try {
+      // Bad user attempting reuse the refresh token
+      const decoded = jwt.verify(refreshToken, env.REFRESH_TOKEN_SECRET) as JWT_PAYLOAD;
+      console.log('decoded', decoded);
+      
+      // Delete all session for that decoded user
+      await deleteUserSessions(decoded.userId);
+    } catch (error) {
+      return res.sendStatus(403); //Forbidden
+    }
+
+    
+    return res.sendStatus(403); //Forbidden
+  }
+
+  // evaluate jwt
+
+  res.sendStatus(204);
+};

@@ -10,6 +10,7 @@ import {
   createUserHandler,
   loginWithEmailAndPasswordHandler,
   logoutHandler,
+  refreshTokenHandler,
   verifyUserHandler,
 } from "./users.controller";
 
@@ -27,6 +28,11 @@ router.post(
   "/api/v1/users",
   validateSchema(createUserSchema),
   createUserHandler
+);
+
+router.post(
+  "/api/v1/users/refresh",
+  refreshTokenHandler,
 );
 
 router.post(
