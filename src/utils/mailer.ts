@@ -7,8 +7,8 @@ const smtp = {
   user: env.MAIL_USER,
   pass: env.MAIL_PASS,
   host: env.MAIL_HOST,
-  port: parseInt(env.MAIL_PORT!, 10),
-  secure: false,
+  port: parseInt(env.MAIL_PORT, 10),
+  secure: true,
 };
 
 const transporter = nodemailer.createTransport({
@@ -22,8 +22,6 @@ export const sendEmail = async (payload: SendMailOptions) => {
       log.error(err, "Error sending email");
       return;
     }
-
-    log.info(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
   });
 };
 

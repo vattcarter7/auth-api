@@ -94,7 +94,7 @@ export async function createUserHandler(
 
     await sendEmail({
       to: user.email,
-      from: "test@example.com",
+      from: "carter@vattsopheak.com",
       subject: "Verify your email",
       text: `verification code: ${user.verificationCode} - Id: ${user.id}`,
     });
