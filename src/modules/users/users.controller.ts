@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 
 import {
   CreateUserInput,
+  ForgotPasswordInput,
   LoginWithEmailAndPasswordInput,
   VerifyUserInput,
 } from "./users.schemas";
@@ -18,6 +19,7 @@ import {
   findUserByEmail,
   findUserById,
   verifyUserById,
+  updateResetPasswordCode,
 } from "./users.services";
 import { env } from "../../constants/env";
 
@@ -229,3 +231,38 @@ export const refreshTokenHandler = async (req: Request, res: Response) => {
     return res.sendStatus(403); // Forbidden
   }
 };
+
+export async function forgotPasswordHandler(
+  req: Request<{}, {}, ForgotPasswordInput>,
+  res: Response
+) {
+  const message =
+    "You will receive a password reset email if the user with that email is registered";
+
+  const { email } = req.body;
+
+  const user = await findUserByEmail(email);
+
+  if (!user) {
+    return res.send(message);
+  }
+
+  if (!user.verified) {
+    return res.send("User is not verified");
+  }
+
+  const passwordResetCode = nanoid();
+
+  user.passwordResetCode = passwordResetCode;
+
+  await updateResetPasswordCode(user.id, passwordResetCode);
+
+  await sendEmail({
+    to: user.email,
+    from: "carter@vattsopheak.com",
+    subject: "Reset your password",
+    text: `Password reset code: ${passwordResetCode} - Id ${user.id}`,
+  });
+
+  return res.send(message);
+}

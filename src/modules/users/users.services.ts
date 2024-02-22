@@ -57,7 +57,20 @@ export const findSessionToken = async (session: string) => {
 };
 
 export const deleteUserSessions = async (userId: string) => {
-  const result = await db.delete(sessions).where(eq(sessions.userId, userId)).returning();
+  const result = await db
+    .delete(sessions)
+    .where(eq(sessions.userId, userId))
+    .returning();
 
   return result[0];
-}
+};
+
+export const updateResetPasswordCode = async (
+  id: string,
+  code: string | null
+) => {
+  await db
+    .update(users)
+    .set({ passwordResetCode: code })
+    .where(eq(users.id, id));
+};

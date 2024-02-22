@@ -5,9 +5,11 @@ import {
   createUserSchema,
   verifyUserSchema,
   loginWithEmailAndPasswordSchema,
+  forgotPasswordSchema,
 } from "./users.schemas";
 import {
   createUserHandler,
+  forgotPasswordHandler,
   loginWithEmailAndPasswordHandler,
   logoutHandler,
   refreshTokenHandler,
@@ -30,15 +32,18 @@ router.post(
   createUserHandler
 );
 
-router.post(
-  "/api/v1/users/refresh",
-  refreshTokenHandler,
-);
+router.post("/api/v1/users/refresh", refreshTokenHandler);
 
 router.post(
   "/api/v1/users/verify/:id/:verificationCode",
   validateSchema(verifyUserSchema),
   verifyUserHandler
+);
+
+router.post(
+  "/api/v1/users/forgot-password",
+  validateSchema(forgotPasswordSchema),
+  forgotPasswordHandler
 );
 
 export default router;

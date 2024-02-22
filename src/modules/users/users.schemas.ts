@@ -35,6 +35,14 @@ export const verifyUserSchema = object({
   }),
 });
 
+export const forgotPasswordSchema = object({
+  body: object({
+    email: string({
+      required_error: "Email is required",
+    }).email("Not a valid email"),
+  }),
+});
+
 export type LoginWithEmailAndPasswordInput = zod.infer<
   typeof loginWithEmailAndPasswordSchema
 >["body"];
@@ -42,3 +50,5 @@ export type LoginWithEmailAndPasswordInput = zod.infer<
 export type CreateUserInput = zod.infer<typeof createUserSchema>["body"];
 
 export type VerifyUserInput = zod.infer<typeof verifyUserSchema>["params"];
+
+export type ForgotPasswordInput = zod.infer<typeof forgotPasswordSchema>["body"];
