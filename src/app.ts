@@ -8,6 +8,7 @@ import { errorHandler } from "./middleware/error-handler";
 import deserializeUser from "./middleware/deserialize-user";
 import userRoute from "./modules/users/users.routes";
 import { log } from "./utils/logger";
+import { gracefulShutdown } from "./utils/graceful-shutdown";
 
 const main = async () => {
   const app = express();
@@ -39,26 +40,16 @@ const main = async () => {
     log.info(` Server is running on port ${port}`);
   });
 
-  await migrate(db, {
-    migrationsFolder: "./migrations",
-  });
-
-  const signals = [
-    "SIGTERM",
-    "SIGINT",
-    "uncaughtException",
-    "unhandledRejection",
-  ];
-
-  // Graceful shutdown
-  for (const signal of signals) {
-    process.on(signal, () => {
-      log.info(`${signal} signal received: closing HTTP server`);
-      server.close(() => {
-        log.info("HTTP server closed");
-      });
+  try {
+    await migrate(db, {
+      migrationsFolder: "./migrations",
     });
+  } catch (error) {
+    log.error("problem migrating...");
+    gracefulShutdown(server);
   }
+
+  gracefulShutdown(server);
 };
 
 main();
