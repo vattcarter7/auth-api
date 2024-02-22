@@ -6,6 +6,7 @@ import {
   verifyUserSchema,
   loginWithEmailAndPasswordSchema,
   forgotPasswordSchema,
+  resetPasswordSchema,
 } from "./users.schemas";
 import {
   createUserHandler,
@@ -13,6 +14,7 @@ import {
   loginWithEmailAndPasswordHandler,
   logoutHandler,
   refreshTokenHandler,
+  resetPasswordHandler,
   verifyUserHandler,
 } from "./users.controller";
 
@@ -44,6 +46,12 @@ router.post(
   "/api/v1/users/forgot-password",
   validateSchema(forgotPasswordSchema),
   forgotPasswordHandler
+);
+
+router.post(
+  "/api/v1/users/resetpassword/:id/:passwordResetCode",
+  validateSchema(resetPasswordSchema),
+  resetPasswordHandler
 );
 
 export default router;

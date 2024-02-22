@@ -7,6 +7,7 @@ import {
   CreateUserInput,
   ForgotPasswordInput,
   LoginWithEmailAndPasswordInput,
+  ResetPasswordInput,
   VerifyUserInput,
 } from "./users.schemas";
 import sendEmail from "../../utils/mailer";
@@ -20,6 +21,7 @@ import {
   findUserById,
   verifyUserById,
   updateResetPasswordCode,
+  updateUserAfterPasswordReset,
 } from "./users.services";
 import { env } from "../../constants/env";
 
@@ -265,4 +267,30 @@ export async function forgotPasswordHandler(
   });
 
   return res.send(message);
+}
+
+export async function resetPasswordHandler(
+  req: Request<ResetPasswordInput["params"], {}, ResetPasswordInput["body"]>,
+  res: Response
+) {
+  const { id, passwordResetCode } = req.params;
+
+  const { password } = req.body;
+
+  const user = await findUserById(id);
+
+  if (
+    !user ||
+    !user.verified ||
+    !user.passwordResetCode ||
+    user.passwordResetCode !== passwordResetCode
+  ) {
+    return res.status(400).send("Could not reset user password");
+  }
+
+  const hashedPassword = await argon2.hash(password);
+
+  await updateUserAfterPasswordReset({ id: user.id, password: hashedPassword });
+
+  return res.send("Successfully updated password");
 }

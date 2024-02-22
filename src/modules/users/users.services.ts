@@ -65,12 +65,19 @@ export const deleteUserSessions = async (userId: string) => {
   return result[0];
 };
 
-export const updateResetPasswordCode = async (
-  id: string,
-  code: string | null
-) => {
+export const updateResetPasswordCode = async (id: string, code: string) => {
   await db
     .update(users)
     .set({ passwordResetCode: code })
     .where(eq(users.id, id));
+};
+
+export const updateUserAfterPasswordReset = async (data: {
+  id: string;
+  password: string;
+}) => {
+  await db
+    .update(users)
+    .set({ passwordResetCode: null, password: data.password })
+    .where(eq(users.id, data.id));
 };

@@ -43,6 +43,18 @@ export const forgotPasswordSchema = object({
   }),
 });
 
+export const resetPasswordSchema = object({
+  params: object({
+    id: string(),
+    passwordResetCode: string(),
+  }),
+  body: object({
+    password: string({
+      required_error: "Password is required",
+    }).min(6, "Password is too short - at least 6 character"),
+  }),
+});
+
 export type LoginWithEmailAndPasswordInput = zod.infer<
   typeof loginWithEmailAndPasswordSchema
 >["body"];
@@ -51,4 +63,8 @@ export type CreateUserInput = zod.infer<typeof createUserSchema>["body"];
 
 export type VerifyUserInput = zod.infer<typeof verifyUserSchema>["params"];
 
-export type ForgotPasswordInput = zod.infer<typeof forgotPasswordSchema>["body"];
+export type ForgotPasswordInput = zod.infer<
+  typeof forgotPasswordSchema
+>["body"];
+
+export type ResetPasswordInput = zod.infer<typeof resetPasswordSchema>;
