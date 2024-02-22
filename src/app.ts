@@ -1,13 +1,12 @@
-import express from "express";
-import { migrate } from "drizzle-orm/node-postgres/migrator";
 import cookieParser from "cookie-parser";
-import path from "path";
+import { migrate } from "drizzle-orm/node-postgres/migrator";
+import express from "express";
 
-import { log } from "./utils/logger";
-import { db } from "./db";
 import { env } from "./constants/env";
-import userRoute from "./modules/users/users.routes";
+import { db } from "./db";
 import { errorHandler } from "./middleware/error-handler";
+import userRoute from "./modules/users/users.routes";
+import { log } from "./utils/logger";
 
 const main = async () => {
   const app = express();
