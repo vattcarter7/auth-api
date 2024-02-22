@@ -98,7 +98,7 @@ export async function createUserHandler(
 
     await sendEmail({
       to: user.email,
-      from: "carter@vattsopheak.com",
+      from: env.MAIL_USER,
       subject: "Verify your email",
       text: `verification code: ${user.verificationCode} - Id: ${user.id}`,
     });
@@ -261,7 +261,7 @@ export async function forgotPasswordHandler(
 
   await sendEmail({
     to: user.email,
-    from: "carter@vattsopheak.com",
+    from: env.MAIL_USER,
     subject: "Reset your password",
     text: `Password reset code: ${passwordResetCode} - Id ${user.id}`,
   });
