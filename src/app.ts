@@ -5,6 +5,7 @@ import express from "express";
 import { env } from "./constants/env";
 import { db } from "./db";
 import { errorHandler } from "./middleware/error-handler";
+import deserializeUser from "./middleware/deserialize-user";
 import userRoute from "./modules/users/users.routes";
 import { log } from "./utils/logger";
 
@@ -16,6 +17,8 @@ const main = async () => {
 
   // built-in middleware for json
   app.use(express.json());
+
+  app.use(deserializeUser);
 
   //middleware for cookies
   app.use(cookieParser());

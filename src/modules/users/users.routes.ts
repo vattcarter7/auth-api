@@ -11,12 +11,14 @@ import {
 import {
   createUserHandler,
   forgotPasswordHandler,
+  getCurrentUserHandler,
   loginWithEmailAndPasswordHandler,
   logoutHandler,
   refreshTokenHandler,
   resetPasswordHandler,
   verifyUserHandler,
 } from "./users.controller";
+import requireUser from "../../middleware/require-user";
 
 const router = express.Router();
 
@@ -49,9 +51,11 @@ router.post(
 );
 
 router.post(
-  "/api/v1/users/resetpassword/:id/:passwordResetCode",
+  "/api/v1/users/reset-password/:id/:passwordResetCode",
   validateSchema(resetPasswordSchema),
   resetPasswordHandler
 );
+
+router.get("/api/v1/users/me", requireUser, getCurrentUserHandler);
 
 export default router;

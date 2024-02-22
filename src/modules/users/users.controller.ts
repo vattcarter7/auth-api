@@ -24,10 +24,7 @@ import {
   updateUserAfterPasswordReset,
 } from "./users.services";
 import { env } from "../../constants/env";
-
-type JWT_PAYLOAD = {
-  userId: string;
-};
+import { JWT_PAYLOAD } from "../../constants/types";
 
 const ACCESS_TOKEN_EXPIRE = "15m";
 const REFRESH_TOKEN_EXPIRE = "1y";
@@ -294,3 +291,7 @@ export async function resetPasswordHandler(
 
   return res.send("Successfully updated password");
 }
+
+export const getCurrentUserHandler = async (req: Request, res: Response) => {
+  return res.send(res.locals.user);
+};
