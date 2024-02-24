@@ -13,8 +13,6 @@ const deserializeUser = async (
     ""
   );
 
-  console.log('accessToken', accessToken);
-
   if (!accessToken) {
     return next();
   }
