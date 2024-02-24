@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { JWT_PAYLOAD } from "../constants/types";
 import { env } from "../constants/env";
+import { log } from "../utils/logger";
 
 const deserializeUser = async (
   req: Request,
@@ -27,7 +28,7 @@ const deserializeUser = async (
       res.locals.user = decoded;
     }
   } catch (error) {
-    console.log("error verify token");
+    log.info("error verify token");
   }
 
   return next();
