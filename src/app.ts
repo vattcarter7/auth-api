@@ -8,7 +8,7 @@ import { errorHandler } from "./middleware/error-handler";
 import deserializeUser from "./middleware/deserialize-user";
 import userRoute from "./modules/users/users.routes";
 import { log } from "./utils/logger";
-import { gracefulShutdown } from "./utils/graceful-shutdown";
+import { listenGracefulShutdown } from "./utils/listen-graceful-shutdown";
 
 const main = async () => {
   const app = express();
@@ -44,12 +44,12 @@ const main = async () => {
     await migrate(db, {
       migrationsFolder: "./migrations",
     });
+    log.info("migrated successfully");
   } catch (error) {
     log.error("problem migrating...");
-    gracefulShutdown(server);
   }
 
-  gracefulShutdown(server);
+  listenGracefulShutdown(server);
 };
 
 main();

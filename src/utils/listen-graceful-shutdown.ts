@@ -1,7 +1,7 @@
 import { IncomingMessage, Server, ServerResponse } from "http";
 import { log } from "./logger";
 
-export const gracefulShutdown = (
+export const listenGracefulShutdown = (
   server: Server<typeof IncomingMessage, typeof ServerResponse>
 ) => {
   const signals = [
